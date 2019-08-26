@@ -41,7 +41,8 @@ setup(
     install_requires=["torch>=1.0.0",
                       "spacy",
                       "lemminflect",
-                      "pytorch_transformers"],
+                      "pytorch_transformers",
+                      "symspellpy"],
     tests_require=["pytest"],
     classifiers=[
           "Intended Audience :: Science/Research",
