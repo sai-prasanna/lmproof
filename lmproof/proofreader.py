@@ -1,10 +1,14 @@
-from typing import List, Set, Optional
-from .scorer import LanguageModelScorer, SentenceScorer
+from typing import List, Set, Optional, Tuple
+
+import numpy as np
+
+from .scorer import TransformerLMScorer, SentenceScorer
 from .candidate_generators import (MatchedGenerator, CandidateGenerator,
                                    EnglishInflectedGenerator,
                                    SpellCorrectGenerator)
 
-class ProofReader:
+
+class Proofreader:
 
     def __init__(self,
                  candidate_generators: List[CandidateGenerator],
@@ -19,9 +23,9 @@ class ProofReader:
         #  P(edited_sentence) = P_lm(edited_sentence) * P(edit_type)
 
     @classmethod
-    def load(cls, language: str, gpu: bool) -> 'ProofReader':
+    def load(cls, language: str, device: str = 'cpu') -> 'ProofReader':
         if language == 'en':
-            scorer = LanguageModelScorer.load(language, gpu=gpu)
+            scorer = TransformerLMScorer.load(language, device=device)
             match_gen = MatchedGenerator.load(language)
             inflect_gen = EnglishInflectedGenerator()
             spell_correct_gen = SpellCorrectGenerator.load(language)
@@ -30,19 +34,22 @@ class ProofReader:
         else:
             raise RuntimeError('Currently unsupported language.')
 
-    def _better_alternative(self, text: str, previous_candidates: Set[str]) -> Optional[str]:
-        source_score = self._scorer.score(text)
+    def _better_alternative(self, text: str, previous_candidates: Set[str]) -> Tuple[Optional[str], Set[str]]:
         candidates = [candidate for g in self._candidate_generators
                       for candidate in g.candidates(text)
                       if candidate not in previous_candidates]
-        best_candidate = None
-        best_candidate_score = None
-        for candidate in candidates:
-            candidate_score = self._scorer.score(candidate)
-            if candidate_score - source_score > self._threshold:
-                if not best_candidate_score or candidate_score > best_candidate_score:
-                    best_candidate = candidate
-                    best_candidate_score = candidate_score
+        
+        # Do Scoring in one shot to use batching internally.
+        source_score, *candidate_scores = self._scorer.score([text] + candidates)
+        # Add the threshold to bias towards source sentence.
+        biased_source_score = source_score + self._threshold
+        thresholded_scores = np.array(candidate_scores)
+        best_idx = np.argmax(thresholded_scores)
+        if candidate_scores[best_idx] > biased_source_score:
+            best_candidate = candidates[best_idx]
+        else:
+            best_candidate = None
+
         return best_candidate, candidates
 
     def proofread(self, sentence: str) -> str:

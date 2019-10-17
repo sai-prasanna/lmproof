@@ -1,4 +1,3 @@
-from .proof_reader import ProofReader
+from .proofreader import Proofreader
 
-def load(language: str, gpu: bool = False) -> ProofReader:
-    return ProofReader.load(language, gpu)
+load = Proofreader.load

@@ -1,47 +1,57 @@
+from typing import Optional, List
+
 import torch
-from pytorch_transformers import (GPT2LMHeadModel, GPT2Tokenizer,
-                                  TransfoXLTokenizer, TransfoXLLMHeadModel,
-                                  OpenAIGPTTokenizer, OpenAIGPTLMHeadModel)
+from torch.nn import CrossEntropyLoss
+from transformers import AutoTokenizer, AutoModelWithLMHead
 
 class SentenceScorer:
-    def score(self, sentence: str) -> float:
+    def score(self, sentences: List[str]) -> List[float]:
         raise NotImplementedError()
 
 
-class LanguageModelScorer(SentenceScorer):
-    def __init__(self, model_name='gpt2', gpu: bool = False):
-        if model_name == 'gpt2':
-            tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-            model = GPT2LMHeadModel.from_pretrained('gpt2')
-        elif model_name == 'transfo-xl-wt103':
-            tokenizer = TransfoXLTokenizer.from_pretrained('transfo-xl-wt103')
-            model = TransfoXLLMHeadModel.from_pretrained('transfo-xl-wt103')
-        elif model_name == 'openai-gpt':
-            tokenizer = OpenAIGPTTokenizer.from_pretrained('openai-gpt')
-            model = OpenAIGPTLMHeadModel.from_pretrained('openai-gpt')
-        else:
-            raise Exception(f'Unknown model {model_name}')
+class TransformerLMScorer(SentenceScorer):
+    def __init__(self, tokenizer: str, lm: str, device: str = "cpu", batch_size: int = 1, normalize: bool = False):
         # Load pre-trained model tokenizer (vocabulary)
-        self._tokenizer = tokenizer
-        self._model = model
-        self._model.eval()
-        self._device = torch.device("cuda:0") if gpu else torch.device("cpu")
-        self._model.to(self._device)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer)
+        self.model = AutoModelWithLMHead.from_pretrained(lm).to(torch.device(device))
+        self.model.eval()
+        self.batch_size = batch_size
+        self.device = torch.device(device)
+        self.model.to(self.device)
+        self.normalize = False
 
     @classmethod
-    def load(cls, language: str, gpu: bool = False) -> 'LanguageModelScorer':
+    def load(cls, language: str, device: str = "cpu") -> 'TransformerLMScorer':
         if language == 'en':
-            return cls(model_name='gpt2', gpu=gpu)
+            batch_size = 1 if device == "cpu" else 32
+            return cls('gpt2', 'gpt2', device, batch_size)
         else:
             raise RuntimeError('Unknown language')
 
-    def score(self, sentence: str):
-        tokens = self._tokenizer.encode(sentence)
-        input_ids = torch.tensor(tokens).unsqueeze(0)  #pylint:disable=not-callable
-        input_ids = input_ids.to(self._device)
-        with torch.no_grad():
-            outputs = self._model(input_ids, labels=input_ids)
-        loss, _ = outputs[:2]
-         # Normalize by subword token length. -1 to remove BOS token.
-        sentence_prob = loss.item() / (len(tokens) - 1)
-        return -sentence_prob
+    def score(self, sentences: List[str]) -> List[float]:
+        scores = []
+        for start_idx in range(0, len(sentences), self.batch_size):
+            batch = sentences[start_idx:start_idx + self.batch_size]
+            tokens_batch = [torch.LongTensor(self.tokenizer.encode(s)) for s in batch]
+            # Pad inputs by a valid embedding id (0), anyway we will mask it during loss calculation
+            # and future is masked in casual language models, so will not affect attention.
+            inputs_batch = torch.nn.utils.rnn.pad_sequence(
+                    tokens_batch, batch_first=True, padding_value=0)
+            # Pad by -1 for labels so that CrossEntropyLoss will ignore the ids.
+            labels_batch = torch.nn.utils.rnn.pad_sequence(
+                    tokens_batch, batch_first=True, padding_value=-1)
+            inputs_batch = inputs_batch.to(self.device)
+            labels_batch = labels_batch.to(self.device)
+
+            lm_logits = self.model(inputs_batch)[0]
+            shift_logits = lm_logits[..., :-1, :].contiguous()
+            shift_labels = labels_batch[..., 1:].contiguous()
+            loss_fct = CrossEntropyLoss(ignore_index=-1)
+
+            for i in range(shift_logits.size(0)):
+                loss = loss_fct(shift_logits[i], shift_labels[i])
+                score = -loss
+                if self.normalize:
+                    score /= (len(tokens_batch[i]) - 1)
+                scores.append(score.item())
+        return scores

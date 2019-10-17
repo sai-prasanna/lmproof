@@ -11,7 +11,6 @@ class CandidateGenerator:
     def candidates(self, text: str) -> List[str]:
         raise NotImplementedError()
 
-
 class MatchedGenerator(CandidateGenerator):
 
     def __init__(self, substitutions: List[Set[str]], spacy_model_name: str):
@@ -21,7 +20,7 @@ class MatchedGenerator(CandidateGenerator):
                                   for word in substs if word}
 
     @classmethod
-    def load(cls, language: str) -> 'MatchesGenerator':
+    def load(cls, language: str) -> 'MatchedGenerator':
         if language == 'en':
             return cls(spacy_model_name='en',
                        substitutions=english())
@@ -91,7 +90,7 @@ class SpellCorrectGenerator(CandidateGenerator):
         for token in tokenized:
             if token.is_alpha and token.pos_ != "PROPN":
                 suggestions = self._sym_spell.lookup(token.text, Verbosity.CLOSEST, 2, transfer_casing=True)
-                substitutes = {s.term for s in suggestions} - {token.text}
+                substitutes = {s.term for s in suggestions} - {token.text, token.lower_}
                 if substitutes:
                     sentences = _substituted_sentences(token.i, tokenized, substitutes)
                     candidates.extend(sentences)
@@ -113,7 +112,7 @@ def _substituted_sentences(token_idx: int,
                 substitute = substitute.title()
             elif replaced_token.is_upper:
                 substitute = substitute.upper()
-            candidate += substitute + " "
+            candidate += substitute + replaced_token.whitespace_
         candidate += suffix.text_with_ws
         candidates.append(candidate)
     return candidates
