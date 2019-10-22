@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "lmproof"
+version = "0.1.0"
+description = "Language model powered proof reader for correcting contextual errors in natural language."
+authors = ["sai-prasanna <sai.r.prasanna@gmail.com>"]
+readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/sai-prasanna/lmproof"
+keywords = [
+    "NLP", "language model", "Grammatical error correction"
+]
+# https://pypi.org/classifiers/
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+include = ["resources/*.txt"]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+spacy = ">=2.1"
+lemminflect = "*"
+transformers = "*"
+symspellpy = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
