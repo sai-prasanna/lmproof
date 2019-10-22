@@ -140,6 +140,14 @@ version = "0.15.2"
 
 [[package]]
 category = "main"
+description = "Clean single-source support for Python 3 and 2"
+name = "future"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "0.18.1"
+
+[[package]]
+category = "main"
 description = "Internationalized Domain Names in Applications (IDNA)"
 name = "idna"
 optional = false
@@ -469,6 +477,18 @@ version = "0.10.0"
 
 [[package]]
 category = "main"
+description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
+name = "torch"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+version = "1.3.0"
+
+[package.dependencies]
+future = "*"
+numpy = "*"
+
+[[package]]
+category = "main"
 description = "Fast, Extensible Progress Meter"
 name = "tqdm"
 optional = false
@@ -540,7 +560,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "bb41e9edc9f67bd7d8a0a8715a6a1e085c1b313ac736ca6d02b63ff103bdd072"
+content-hash = "821f6c5dca16af0167e765b12f82f5add397f5e1f564d5c587c1929ff4e7e421"
 python-versions = ">=3.7"
 
 [metadata.files]
@@ -628,6 +648,9 @@ docutils = [
     {file = "docutils-0.15.2-py2-none-any.whl", hash = "sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827"},
     {file = "docutils-0.15.2-py3-none-any.whl", hash = "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"},
     {file = "docutils-0.15.2.tar.gz", hash = "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"},
+]
+future = [
+    {file = "future-0.18.1.tar.gz", hash = "sha256:858e38522e8fd0d3ce8f0c1feaf0603358e366d5403209674c7b617fa0c24093"},
 ]
 idna = [
     {file = "idna-2.8-py2.py3-none-any.whl", hash = "sha256:ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"},
@@ -838,6 +861,16 @@ toml = [
     {file = "toml-0.10.0-py2.7.egg", hash = "sha256:f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"},
     {file = "toml-0.10.0-py2.py3-none-any.whl", hash = "sha256:235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e"},
     {file = "toml-0.10.0.tar.gz", hash = "sha256:229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c"},
+]
+torch = [
+    {file = "torch-1.3.0-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:7499fbc00ebbb04b6a6cc77ba7055b3b93460da87139dd8aeb357c5446a44cf8"},
+    {file = "torch-1.3.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:93e3542d57d413d4bbd75f34ce06b7a2840da3a258e3ce20c751b31a6c24189f"},
+    {file = "torch-1.3.0-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:aec5245b459427bd4acea092bacbd6794bebaf65488caf931833a76cfbf9c5fa"},
+    {file = "torch-1.3.0-cp35-none-macosx_10_6_x86_64.whl", hash = "sha256:edf07e00bb7271406cec50630d7e17f89221eeea9bd6abab885f710d31758691"},
+    {file = "torch-1.3.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2d07d9db5cf43d152c17caf13428c10ab8c8fbf9c3bd503cfc46222cbfd1bb1c"},
+    {file = "torch-1.3.0-cp36-none-macosx_10_7_x86_64.whl", hash = "sha256:3b3ef18d03d8bc2ffccef1b3d2a156aa6f3235ed76d1c93cf3711c48055c79ce"},
+    {file = "torch-1.3.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:d460039d0d6c9e3e70b76bf9594c4ac364a287f125d22e10a6e9e1198887422c"},
+    {file = "torch-1.3.0-cp37-none-macosx_10_9_x86_64.whl", hash = "sha256:b33884ff0ca101ea6a3415e946b85f98253ee32401c6d863cc5fc6d5bb02d81c"},
 ]
 tqdm = [
     {file = "tqdm-4.36.1-py2.py3-none-any.whl", hash = "sha256:dd3fcca8488bb1d416aa7469d2f277902f26260c45aa86b667b074cd44b3b115"},
