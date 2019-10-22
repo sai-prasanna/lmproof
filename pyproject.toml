@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lmproof"
-version = "0.1.0"
+version = "0.1.1-unreleased"
 description = "Language model powered proof reader for correcting contextual errors in natural language."
 authors = ["sai-prasanna <sai.r.prasanna@gmail.com>"]
 readme = "README.md"
