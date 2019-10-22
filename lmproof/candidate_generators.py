@@ -3,6 +3,7 @@ from typing import List, Set
 
 import lemminflect
 import spacy
+from spacy.lang.en import English
 from symspellpy.symspellpy import SymSpell, Verbosity
 
 from .substitutions import english
@@ -14,8 +15,8 @@ class CandidateGenerator:
 
 
 class MatchedGenerator(CandidateGenerator):
-    def __init__(self, substitutions: List[Set[str]], spacy_model_name: str):
-        self._spacy = spacy.load(spacy_model_name, disable=["ner", "parser", "tagger"])
+    def __init__(self, substitutions: List[Set[str]], spacy_model: spacy.language.Language):
+        self._spacy = spacy_model
         self._substitutions = substitutions
         self._word2substitutes = {
             word: substs for substs in substitutions for word in substs if word
@@ -24,7 +25,8 @@ class MatchedGenerator(CandidateGenerator):
     @classmethod
     def load(cls, language: str) -> "MatchedGenerator":
         if language == "en":
-            return cls(spacy_model_name="en", substitutions=english())
+            spacy_model = English()
+            return cls(substitutions=english(), spacy_model=spacy_model)
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
 
@@ -49,7 +51,7 @@ class MatchedGenerator(CandidateGenerator):
 
 class EnglishInflectedGenerator(CandidateGenerator):
     def __init__(self):
-        self._spacy = spacy.load("en", disable=["ner", "parser", "tagger"])
+        self._spacy = English()
 
     def candidates(self, text: str) -> List[str]:
         tokenized = self._spacy.tokenizer(text)
@@ -73,9 +75,9 @@ class EnglishInflectedGenerator(CandidateGenerator):
 
 
 class SpellCorrectGenerator(CandidateGenerator):
-    def __init__(self, sym_spell: SymSpell, spacy_model_name: str):
+    def __init__(self, sym_spell: SymSpell, spacy_model: spacy.language.Language):
         self._sym_spell = sym_spell
-        self._spacy = spacy.load(spacy_model_name, disable=["ner", "parser"])
+        self._spacy = spacy_model
 
     @classmethod
     def load(cls, language: str) -> "SpellCorrectGenerator":
@@ -91,10 +93,10 @@ class SpellCorrectGenerator(CandidateGenerator):
                 / "frequency_dictionary_en_82_765.txt"
             )
             sym_spell.create_dictionary(str(dict_path))
-            spacy_model_name = "en"
+            spacy_model = English()
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
-        return cls(sym_spell, spacy_model_name)
+        return cls(sym_spell, spacy_model)
 
     def candidates(self, text: str) -> List[str]:
         tokenized = self._spacy(text)
