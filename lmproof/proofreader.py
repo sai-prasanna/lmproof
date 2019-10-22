@@ -3,17 +3,21 @@ from typing import List, Set, Optional, Tuple
 import numpy as np
 
 from .scorer import TransformerLMScorer, SentenceScorer
-from .candidate_generators import (MatchedGenerator, CandidateGenerator,
-                                   EnglishInflectedGenerator,
-                                   SpellCorrectGenerator)
+from .candidate_generators import (
+    MatchedGenerator,
+    CandidateGenerator,
+    EnglishInflectedGenerator,
+    SpellCorrectGenerator,
+)
 
 
 class Proofreader:
-
-    def __init__(self,
-                 candidate_generators: List[CandidateGenerator],
-                 scorer: SentenceScorer,
-                 threshold: float):
+    def __init__(
+        self,
+        candidate_generators: List[CandidateGenerator],
+        scorer: SentenceScorer,
+        threshold: float,
+    ):
         self._candidate_generators = candidate_generators
         self._scorer = scorer
         self._threshold = threshold
@@ -23,8 +27,8 @@ class Proofreader:
         #  P(edited_sentence) = P_lm(edited_sentence) * P(edit_type)
 
     @classmethod
-    def load(cls, language: str, device: str = 'cpu') -> 'ProofReader':
-        if language == 'en':
+    def load(cls, language: str, device: str = "cpu") -> "ProofReader":
+        if language == "en":
             scorer = TransformerLMScorer.load(language, device=device)
             match_gen = MatchedGenerator.load(language)
             inflect_gen = EnglishInflectedGenerator()
@@ -32,13 +36,18 @@ class Proofreader:
             threshold = 0.1
             return cls([match_gen, inflect_gen, spell_correct_gen], scorer, threshold)
         else:
-            raise RuntimeError('Currently unsupported language.')
+            raise RuntimeError("Currently unsupported language.")
 
-    def _better_alternative(self, text: str, previous_candidates: Set[str]) -> Tuple[Optional[str], Set[str]]:
-        candidates = [candidate for g in self._candidate_generators
-                      for candidate in g.candidates(text)
-                      if candidate not in previous_candidates]
-        
+    def _better_alternative(
+        self, text: str, previous_candidates: Set[str]
+    ) -> Tuple[Optional[str], Set[str]]:
+        candidates = [
+            candidate
+            for g in self._candidate_generators
+            for candidate in g.candidates(text)
+            if candidate not in previous_candidates
+        ]
+
         # Do Scoring in one shot to use batching internally.
         source_score, *candidate_scores = self._scorer.score([text] + candidates)
         # Add the threshold to bias towards source sentence.
@@ -56,8 +65,9 @@ class Proofreader:
         correction = sentence
         previous_candidates = set([sentence])
         while True:
-            better_alternative, candidates = self._better_alternative(correction,
-                                                                      previous_candidates)
+            better_alternative, candidates = self._better_alternative(
+                correction, previous_candidates
+            )
             if not better_alternative:
                 break
             else:
