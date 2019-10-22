@@ -40,7 +40,7 @@ class TransformerLMScorer(SentenceScorer):
             # And dynamically batch.
             batch_size = 1 if device == "cpu" else 32
             tokenizer = AutoTokenizer.from_pretrained("gpt2")
-            model = AutoModelWithLMHead.from_pretrained("gpt2")
+            model = AutoModelWithLMHead.from_pretrained("distilgpt2")
             return cls(tokenizer, model, device, batch_size)
         else:
             raise RuntimeError("Language {language} is not supported.")
