@@ -15,7 +15,9 @@ class CandidateGenerator:
 
 
 class MatchedGenerator(CandidateGenerator):
-    def __init__(self, substitutions: List[Set[str]], spacy_model: spacy.language.Language):
+    def __init__(
+        self, substitutions: List[Set[str]], spacy_model: spacy.language.Language
+    ):
         self._spacy = spacy_model
         self._substitutions = substitutions
         self._word2substitutes = {
