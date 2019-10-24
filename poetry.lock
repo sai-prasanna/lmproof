@@ -62,10 +62,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.9.253"
+version = "1.10.1"
 
 [package.dependencies]
-botocore = ">=1.12.253,<1.13.0"
+botocore = ">=1.13.1,<1.14.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.2.0,<0.3.0"
 
@@ -75,7 +75,7 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.12.253"
+version = "1.13.1"
 
 [package.dependencies]
 docutils = ">=0.10,<0.16"
@@ -435,7 +435,7 @@ description = "Python SymSpell"
 name = "symspellpy"
 optional = false
 python-versions = ">=3.4"
-version = "6.5.1"
+version = "6.5.2"
 
 [package.dependencies]
 numpy = ">=1.13.1"
@@ -481,7 +481,7 @@ description = "Tensors and Dynamic neural networks in Python with strong GPU acc
 name = "torch"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "1.3.0.post2"
+version = "1.3.0"
 
 [package.dependencies]
 future = "*"
@@ -560,7 +560,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pathlib2", "contextlib2", "unittest2"]
 
 [metadata]
-content-hash = "e6ff659200c4b3478eb541141c3bf384de15a8fe59f7fa725e395bb5c5f72d59"
+content-hash = "a4dda48ee25b5141cb24a9b26a56e777d368fb400d1e059a85c7f59fecd5b87f"
 python-versions = ">=3.7"
 
 [metadata.files]
@@ -596,12 +596,12 @@ blis = [
     {file = "blis-0.4.1.tar.gz", hash = "sha256:d69257d317e86f34a7f230a2fd1f021fd2a1b944137f40d8cdbb23bd334cd0c4"},
 ]
 boto3 = [
-    {file = "boto3-1.9.253-py2.py3-none-any.whl", hash = "sha256:839285fbd6f3ab16170af449ae9e33d0eccf97ca22de17d9ff68b8da2310ea06"},
-    {file = "boto3-1.9.253.tar.gz", hash = "sha256:d93f1774c4bc66e02acdda2067291acb9e228a035435753cb75f83ad2904cbe3"},
+    {file = "boto3-1.10.1-py2.py3-none-any.whl", hash = "sha256:77806f23320554b5d3175f4ef864e4ca6eb04d97a95ad6d2b3e3ef7736472c35"},
+    {file = "boto3-1.10.1.tar.gz", hash = "sha256:2904bfb928116fea3a83247de6c3687eb9bf942d764e361f5574d5ac11be2ad3"},
 ]
 botocore = [
-    {file = "botocore-1.12.253-py2.py3-none-any.whl", hash = "sha256:dc080aed4f9b220a9e916ca29ca97a9d37e8e1d296fe89cbaeef929bf0c8066b"},
-    {file = "botocore-1.12.253.tar.gz", hash = "sha256:3baf129118575602ada9926f5166d82d02273c250d0feb313fc270944b27c48b"},
+    {file = "botocore-1.13.1-py2.py3-none-any.whl", hash = "sha256:05d42876001fe6513742edcdb550f0aeabff2b123678a6b661cfeb6c26066b8e"},
+    {file = "botocore-1.13.1.tar.gz", hash = "sha256:acceec0b79df7e5f8b15eab3033f6a7c7f69d0bc27aa01d65aa5ba4d90742787"},
 ]
 certifi = [
     {file = "certifi-2019.9.11-py2.py3-none-any.whl", hash = "sha256:fd7c7c74727ddcf00e9acd26bba8da604ffec95bf1c2144e67aff7a8b50e6cef"},
@@ -840,8 +840,8 @@ srsly = [
     {file = "srsly-0.1.0.tar.gz", hash = "sha256:5cc0dc561fa70cf12d21d192990a48388a78c8062cd3dcadcf336fc1c3953ed1"},
 ]
 symspellpy = [
-    {file = "symspellpy-6.5.1-py3-none-any.whl", hash = "sha256:84090ee35c30b60400bb159c8daacef91ed1d1de04e0c5ae91123cac08af1bf2"},
-    {file = "symspellpy-6.5.1.tar.gz", hash = "sha256:c73901b2f9d049d6fa4f52941240e7fc577e87d2761764c632daeadfc694ed74"},
+    {file = "symspellpy-6.5.2-py3-none-any.whl", hash = "sha256:ab1adacd40a616741181121e8927c9c4d43bb961756b97c642ed60dc3960b469"},
+    {file = "symspellpy-6.5.2.tar.gz", hash = "sha256:884a6496462288576f6ab5d6888f84e406e871031e0c64de1c3aa6c78d5ee35a"},
 ]
 thinc = [
     {file = "thinc-7.1.1-cp27-cp27m-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:375c55121a16e0af68de2740ecf30267a14b1b5cf538742e1e0d9afa94822234"},
@@ -863,10 +863,14 @@ toml = [
     {file = "toml-0.10.0.tar.gz", hash = "sha256:229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c"},
 ]
 torch = [
-    {file = "torch-1.3.0.post2-cp27-none-macosx_10_7_x86_64.whl", hash = "sha256:02d435248e40a9ed3d81ef81a5466e21216833eab2b9cf076f303b7159592fc7"},
-    {file = "torch-1.3.0.post2-cp35-none-macosx_10_6_x86_64.whl", hash = "sha256:ab98d84ee449b2e42f352a34fdefc3b6a5fb28041f40619b33d2d09b1a35bd31"},
-    {file = "torch-1.3.0.post2-cp36-none-macosx_10_7_x86_64.whl", hash = "sha256:0e6a5ab1970be4d40d176c878c86f56a05af30016db5cd45fa8ef2a3b168c71b"},
-    {file = "torch-1.3.0.post2-cp37-none-macosx_10_9_x86_64.whl", hash = "sha256:16efb90d9f341c6af2bba30556a4ff4c31277b184d1e8ad8d2269ac91a7a38f9"},
+    {file = "torch-1.3.0-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:7499fbc00ebbb04b6a6cc77ba7055b3b93460da87139dd8aeb357c5446a44cf8"},
+    {file = "torch-1.3.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:93e3542d57d413d4bbd75f34ce06b7a2840da3a258e3ce20c751b31a6c24189f"},
+    {file = "torch-1.3.0-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:aec5245b459427bd4acea092bacbd6794bebaf65488caf931833a76cfbf9c5fa"},
+    {file = "torch-1.3.0-cp35-none-macosx_10_6_x86_64.whl", hash = "sha256:edf07e00bb7271406cec50630d7e17f89221eeea9bd6abab885f710d31758691"},
+    {file = "torch-1.3.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:2d07d9db5cf43d152c17caf13428c10ab8c8fbf9c3bd503cfc46222cbfd1bb1c"},
+    {file = "torch-1.3.0-cp36-none-macosx_10_7_x86_64.whl", hash = "sha256:3b3ef18d03d8bc2ffccef1b3d2a156aa6f3235ed76d1c93cf3711c48055c79ce"},
+    {file = "torch-1.3.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:d460039d0d6c9e3e70b76bf9594c4ac364a287f125d22e10a6e9e1198887422c"},
+    {file = "torch-1.3.0-cp37-none-macosx_10_9_x86_64.whl", hash = "sha256:b33884ff0ca101ea6a3415e946b85f98253ee32401c6d863cc5fc6d5bb02d81c"},
 ]
 tqdm = [
     {file = "tqdm-4.36.1-py2.py3-none-any.whl", hash = "sha256:dd3fcca8488bb1d416aa7469d2f277902f26260c45aa86b667b074cd44b3b115"},
