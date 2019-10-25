@@ -62,10 +62,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.9.253"
+version = "1.10.2"
 
 [package.dependencies]
-botocore = ">=1.12.253,<1.13.0"
+botocore = ">=1.13.2,<1.14.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.2.0,<0.3.0"
 
@@ -75,7 +75,7 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.12.253"
+version = "1.13.2"
 
 [package.dependencies]
 docutils = ">=0.10,<0.16"
@@ -326,7 +326,7 @@ description = "pytest: simple powerful testing with Python"
 name = "pytest"
 optional = false
 python-versions = ">=3.5"
-version = "5.2.1"
+version = "5.2.2"
 
 [package.dependencies]
 atomicwrites = ">=1.0"
@@ -470,7 +470,7 @@ description = "Python SymSpell"
 name = "symspellpy"
 optional = false
 python-versions = ">=3.4"
-version = "6.5.1"
+version = "6.5.2"
 
 [package.dependencies]
 numpy = ">=1.13.1"
@@ -579,7 +579,7 @@ description = "A lightweight console printing and formatting toolkit"
 name = "wasabi"
 optional = false
 python-versions = "*"
-version = "0.2.2"
+version = "0.3.0"
 
 [[package]]
 category = "dev"
@@ -642,12 +642,12 @@ blis = [
     {file = "blis-0.4.1.tar.gz", hash = "sha256:d69257d317e86f34a7f230a2fd1f021fd2a1b944137f40d8cdbb23bd334cd0c4"},
 ]
 boto3 = [
-    {file = "boto3-1.9.253-py2.py3-none-any.whl", hash = "sha256:839285fbd6f3ab16170af449ae9e33d0eccf97ca22de17d9ff68b8da2310ea06"},
-    {file = "boto3-1.9.253.tar.gz", hash = "sha256:d93f1774c4bc66e02acdda2067291acb9e228a035435753cb75f83ad2904cbe3"},
+    {file = "boto3-1.10.2-py2.py3-none-any.whl", hash = "sha256:7fc97cb2c9cdff905e950750c8e8b23b872a84696158a28852355dc4b712ba3a"},
+    {file = "boto3-1.10.2.tar.gz", hash = "sha256:818c56a317c176142dbf1dca3f5b4366c80460c6cc3c4efe22f0bde736571283"},
 ]
 botocore = [
-    {file = "botocore-1.12.253-py2.py3-none-any.whl", hash = "sha256:dc080aed4f9b220a9e916ca29ca97a9d37e8e1d296fe89cbaeef929bf0c8066b"},
-    {file = "botocore-1.12.253.tar.gz", hash = "sha256:3baf129118575602ada9926f5166d82d02273c250d0feb313fc270944b27c48b"},
+    {file = "botocore-1.13.2-py2.py3-none-any.whl", hash = "sha256:f8e12dc6e536ea512f0ad25b74e7eecdf5d9e09ae92b5de236b535bee7804d5b"},
+    {file = "botocore-1.13.2.tar.gz", hash = "sha256:8223485841ef4731a5d4943a733295ba69d0005c4ae64c468308cc07f6960d39"},
 ]
 certifi = [
     {file = "certifi-2019.9.11-py2.py3-none-any.whl", hash = "sha256:fd7c7c74727ddcf00e9acd26bba8da604ffec95bf1c2144e67aff7a8b50e6cef"},
@@ -808,8 +808,8 @@ pyparsing = [
     {file = "pyparsing-2.4.2.tar.gz", hash = "sha256:6f98a7b9397e206d78cc01df10131398f1c8b8510a2f4d97d9abd82e1aacdd80"},
 ]
 pytest = [
-    {file = "pytest-5.2.1-py3-none-any.whl", hash = "sha256:7e4800063ccfc306a53c461442526c5571e1462f61583506ce97e4da6a1d88c8"},
-    {file = "pytest-5.2.1.tar.gz", hash = "sha256:ca563435f4941d0cb34767301c27bc65c510cb82e90b9ecf9cb52dc2c63caaa0"},
+    {file = "pytest-5.2.2-py3-none-any.whl", hash = "sha256:58cee9e09242937e136dbb3dab466116ba20d6b7828c7620f23947f37eb4dae4"},
+    {file = "pytest-5.2.2.tar.gz", hash = "sha256:27abc3fef618a01bebb1f0d6d303d2816a99aa87a5968ebc32fe971be91eb1e6"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.0.tar.gz", hash = "sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"},
@@ -898,8 +898,8 @@ srsly = [
     {file = "srsly-0.1.0.tar.gz", hash = "sha256:5cc0dc561fa70cf12d21d192990a48388a78c8062cd3dcadcf336fc1c3953ed1"},
 ]
 symspellpy = [
-    {file = "symspellpy-6.5.1-py3-none-any.whl", hash = "sha256:84090ee35c30b60400bb159c8daacef91ed1d1de04e0c5ae91123cac08af1bf2"},
-    {file = "symspellpy-6.5.1.tar.gz", hash = "sha256:c73901b2f9d049d6fa4f52941240e7fc577e87d2761764c632daeadfc694ed74"},
+    {file = "symspellpy-6.5.2-py3-none-any.whl", hash = "sha256:ab1adacd40a616741181121e8927c9c4d43bb961756b97c642ed60dc3960b469"},
+    {file = "symspellpy-6.5.2.tar.gz", hash = "sha256:884a6496462288576f6ab5d6888f84e406e871031e0c64de1c3aa6c78d5ee35a"},
 ]
 tabulate = [
     {file = "tabulate-0.8.5.tar.gz", hash = "sha256:d0097023658d4dea848d6ae73af84532d1e86617ac0925d1adf1dd903985dac3"},
@@ -946,8 +946,8 @@ urllib3 = [
     {file = "urllib3-1.22.tar.gz", hash = "sha256:cc44da8e1145637334317feebd728bd869a35285b93cbb4cca2577da7e62db4f"},
 ]
 wasabi = [
-    {file = "wasabi-0.2.2-py3-none-any.whl", hash = "sha256:b4fbee9dd0c8f5cff6554c0463c565e2d52b7c844d7eccb477d29a6ff8567750"},
-    {file = "wasabi-0.2.2.tar.gz", hash = "sha256:f92c83e728bf1db6dc859ffc861afa328d2da8ef0c7a19300e5fb1bd5762b277"},
+    {file = "wasabi-0.3.0-py3-none-any.whl", hash = "sha256:7127b5f75d0f17f51048ca81d62440655ae87afcbed36adad717a5e35e671fa8"},
+    {file = "wasabi-0.3.0.tar.gz", hash = "sha256:051fd33b47cf5f21626a3b750001b267c464c84a33f8e8fbcb49e48c8fe82838"},
 ]
 wcwidth = [
     {file = "wcwidth-0.1.7-py2.py3-none-any.whl", hash = "sha256:f4ebe71925af7b40a864553f761ed559b43544f8f71746c2d756c7fe788ade7c"},
