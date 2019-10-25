@@ -3,6 +3,8 @@
 Library to do proof-reading corrections for Grammatical Errors, spelling errors, confused word errors and other errors using pre-trained Language Models.
 
 ## Usage
+Install spacy model by `python -m spacy download en`.
+Then try out this snippet.
 
 ``` python
 import lmproof

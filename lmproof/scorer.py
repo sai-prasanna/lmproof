@@ -48,7 +48,7 @@ class TransformerLMScorer(SentenceScorer):
     def score(self, sentences: List[str]) -> List[float]:
         scores = []
         for start_idx in range(0, len(sentences), self.batch_size):
-            batch = sentences[start_idx : start_idx + self.batch_size]
+            batch = sentences[start_idx: start_idx + self.batch_size]
             tokens_batch = [torch.LongTensor(self.tokenizer.encode(s)) for s in batch]
             # Pad inputs by a valid embedding id (0),
             # we will mask it during loss calculation and future is masked
