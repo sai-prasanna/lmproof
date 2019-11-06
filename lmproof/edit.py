@@ -6,6 +6,7 @@ class Span:
     start: int
     end: int
 
+
 @dataclass(eq=True, frozen=True)
 class Edit:
     span: Span

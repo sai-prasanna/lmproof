@@ -11,7 +11,7 @@ from .edit import Edit, Span
 
 
 class CandidateEditGenerator:
-    def candidates(self, text: str) -> List[Edit]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         raise NotImplementedError()
 
 
@@ -33,9 +33,9 @@ class MatchedGenerator(CandidateEditGenerator):
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
 
-    def candidates(self, text: str) -> List[Edit]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy.tokenizer(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             # Currently we enumerate tokens, if it matches anything word
             # that can be susbtituted, we generate full sentence with only
@@ -47,18 +47,18 @@ class MatchedGenerator(CandidateEditGenerator):
                 substitutes = self._word2substitutes[current_token_lower] - {
                     current_token_lower
                 }
-                current_candidates = _edits(token.i, tokenized, substitutes)
-                candidates.extend(current_candidates)
-        return candidates
+                current_candidate_edits = _edits(token.i, tokenized, substitutes)
+                candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
 
 
 class EnglishInflectedGenerator(CandidateEditGenerator):
     def __init__(self):
         self._spacy = English()
 
-    def candidates(self, text: str) -> List[Edit]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy.tokenizer(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             lemmas = {
                 lemma
@@ -72,9 +72,9 @@ class EnglishInflectedGenerator(CandidateEditGenerator):
                 for inflection in inflections
             }
             substitutes = inflections - {token.text}
-            current_candidates = _edits(token.i, tokenized, substitutes)
-            candidates.extend(current_candidates)
-        return candidates
+            current_candidate_edits = _edits(token.i, tokenized, substitutes)
+            candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
 
 
 class SpellCorrectGenerator(CandidateEditGenerator):
@@ -96,14 +96,14 @@ class SpellCorrectGenerator(CandidateEditGenerator):
                 / "frequency_dictionary_en_82_765.txt"
             )
             sym_spell.create_dictionary(str(dict_path))
-            spacy_model = spacy.load('en', disable=['parser', 'ner'])
+            spacy_model = spacy.load("en", disable=["parser", "ner"])
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
         return cls(sym_spell, spacy_model)
 
-    def candidates(self, text: str) -> List[Edit]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             if token.is_alpha and token.pos_ != "PROPN":
                 suggestions = self._sym_spell.lookup(
@@ -111,25 +111,24 @@ class SpellCorrectGenerator(CandidateEditGenerator):
                 )
                 substitutes = {s.term for s in suggestions} - {token.text, token.lower_}
                 if substitutes:
-                    current_candidates = _edits(token.i, tokenized, substitutes)
-                    candidates.extend(current_candidates)
-        return candidates
+                    current_candidate_edits = _edits(token.i, tokenized, substitutes)
+                    candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
+
 
 def _edits(
-    token_idx: int, tokenized_sentence: spacy.tokens.Doc, substitutes: List[str]
+    token_idx: int, tokenized_sentence: spacy.tokens.Doc, substitutes: Set[str]
 ) -> List[Edit]:
-    candidates = []
+    candidate_edits = []
     replaced_token = tokenized_sentence[token_idx]
     for substitute in substitutes:
-        candidate = ''
-        if substitute:  # Could be empty for deletions.
-            if replaced_token.is_title:
-                substitute = substitute.title()
-            elif replaced_token.is_upper:
-                substitute = substitute.upper()
-            candidate = Edit(Span(
-                replaced_token.idx,
-                replaced_token.idx + len(replaced_token)
-            ), substitute)
-            candidates.append(candidate)
-    return candidates
+        if replaced_token.is_title:
+            substitute = substitute.title()
+        elif replaced_token.is_upper:
+            substitute = substitute.upper()
+        candidate = Edit(
+            Span(replaced_token.idx, replaced_token.idx + len(replaced_token)),
+            substitute,
+        )
+        candidate_edits.append(candidate)
+    return candidate_edits
