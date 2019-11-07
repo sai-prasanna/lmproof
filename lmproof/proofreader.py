@@ -1,6 +1,5 @@
 from typing import List, Set, Optional, Tuple, Dict, Callable
 
-import numpy as np
 import spacy
 
 from lmproof.edit import Edit, Span
@@ -72,12 +71,13 @@ class Proofreader:
         if candidates:
             # Do Scoring in one shot to use batching internally.
             source_score, *candidate_scores = self._scorer.score([text] + candidates)
-            # Add the threshold to bias towards source sentence.
-            biased_source_score = source_score + self._threshold
-            candidate_scores = np.array(candidate_scores)
-            best_idx = np.argmax(candidate_scores)
-            if candidate_scores[best_idx] > biased_source_score:
-                best_candidate = candidates[best_idx]
+            if source_score is not None:
+                # Add the threshold to bias towards source sentence.
+                best_score = source_score + self._threshold
+                for candidate, candidate_score in zip(candidates, candidate_scores):
+                    if candidate_score is not None and candidate_score > best_score:
+                        best_candidate = candidate
+                        best_score = candidate_score
         return best_candidate, set(candidates)
 
     def proofread(self, sentence: str) -> str:
