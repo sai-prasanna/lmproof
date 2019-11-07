@@ -12,16 +12,15 @@ from lmproof.candidate_generators import (
 )
 
 
-def apply_all_edits(text: str, edits: List[Edit], ignore: Set[str]) -> List[str]:
+def apply_all_edits(text: str, edits: List[Edit]) -> List[str]:
     candidates = []
     for edit in edits:
         candidate = text[: edit.span.start] + edit.text + text[edit.span.end :]
-        if candidate not in ignore:
-            candidates.append(candidate)
+        candidates.append(candidate)
     return candidates
 
 
-ApplyEdits = Callable[[str, List[Edit], Set[str]], List[str]]
+ApplyEdits = Callable[[str, List[Edit]], List[str]]
 
 
 class Proofreader:
@@ -36,7 +35,7 @@ class Proofreader:
         self._candidate_generators = candidate_generators
         self._scorer = scorer
         self._threshold = threshold
-        self._apply_edits = apply_edits
+        self.apply_edits = apply_edits
         self._max_iterations = max_iterations
         # TODO: Weight language model score by the prior probability of the edit made.
         #  The prior probability of edit can be obtained by the
@@ -63,9 +62,13 @@ class Proofreader:
             candidate_edit
             for g in self._candidate_generators
             for candidate_edit in g.candidate_edits(text)
+            if text[: candidate_edit.span.start]
+            + candidate_edit.text
+            + text[candidate_edit.span.end :]
+            not in previous_candidates
         ]
 
-        candidates = self._apply_edits(text, candidate_edits, previous_candidates)
+        candidates = self.apply_edits(text, candidate_edits)
 
         best_candidate: Optional[str] = None
         if candidates:
@@ -92,6 +95,6 @@ class Proofreader:
                 break
             else:
                 correction = better_alternative
-                previous_candidates.union(set(candidates))
+                previous_candidates.union(candidates)
             i += 1
         return correction
