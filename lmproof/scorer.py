@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 import torch
-import math
 import logging
 from torch.nn import CrossEntropyLoss
 from transformers import (

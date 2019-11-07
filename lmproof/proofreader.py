@@ -1,8 +1,6 @@
-from typing import List, Set, Optional, Tuple, Dict, Callable
+from typing import List, Set, Optional, Tuple, Callable
 
-import spacy
-
-from lmproof.edit import Edit, Span
+from lmproof.edit import Edit
 from lmproof.scorer import TransformerLMScorer, SentenceScorer
 from lmproof.candidate_generators import (
     MatchedGenerator,
