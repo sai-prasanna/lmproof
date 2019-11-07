@@ -1,3 +1,3 @@
-from .proofreader import Proofreader
+from lmproof.proofreader import Proofreader
 
 load = Proofreader.load

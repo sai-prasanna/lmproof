@@ -1,33 +1,49 @@
-from typing import List, Set, Optional, Tuple
+from typing import List, Set, Optional, Tuple, Dict, Callable
 
-import numpy as np
+import spacy
 
-from .scorer import TransformerLMScorer, SentenceScorer
-from .candidate_generators import (
+from lmproof.edit import Edit, Span
+from lmproof.scorer import TransformerLMScorer, SentenceScorer
+from lmproof.candidate_generators import (
     MatchedGenerator,
-    CandidateGenerator,
+    CandidateEditGenerator,
     EnglishInflectedGenerator,
     SpellCorrectGenerator,
 )
 
 
+def apply_all_edits(text: str, edits: List[Edit]) -> List[str]:
+    candidates = []
+    for edit in edits:
+        candidate = text[: edit.span.start] + edit.text + text[edit.span.end :]
+        candidates.append(candidate)
+    return candidates
+
+
+ApplyEdits = Callable[[str, List[Edit]], List[str]]
+
+
 class Proofreader:
     def __init__(
         self,
-        candidate_generators: List[CandidateGenerator],
+        candidate_generators: List[CandidateEditGenerator],
         scorer: SentenceScorer,
         threshold: float,
+        apply_edits: ApplyEdits = apply_all_edits,
+        max_iterations: int = 4,
     ):
         self._candidate_generators = candidate_generators
         self._scorer = scorer
         self._threshold = threshold
+        self.apply_edits = apply_edits
+        self._max_iterations = max_iterations
         # TODO: Weight language model score by the prior probability of the edit made.
         #  The prior probability of edit can be obtained by the
         #  frequency of the error in grammar error correction corpora.
         #  P(edited_sentence) = P_lm(edited_sentence) * P(edit_type)
 
     @classmethod
-    def load(cls, language: str, device: str = "cpu") -> "ProofReader":
+    def load(cls, language: str, device: str = "cpu") -> "Proofreader":
         if language == "en":
             scorer = TransformerLMScorer.load(language, device=device)
             match_gen = MatchedGenerator.load(language)
@@ -41,30 +57,37 @@ class Proofreader:
     def _better_alternative(
         self, text: str, previous_candidates: Set[str]
     ) -> Tuple[Optional[str], Set[str]]:
-        candidates = [
-            candidate
+
+        candidate_edits = [
+            candidate_edit
             for g in self._candidate_generators
-            for candidate in g.candidates(text)
-            if candidate not in previous_candidates
+            for candidate_edit in g.candidate_edits(text)
+            if text[: candidate_edit.span.start]
+            + candidate_edit.text
+            + text[candidate_edit.span.end :]
+            not in previous_candidates
         ]
 
-        # Do Scoring in one shot to use batching internally.
-        source_score, *candidate_scores = self._scorer.score([text] + candidates)
-        # Add the threshold to bias towards source sentence.
-        biased_source_score = source_score + self._threshold
-        thresholded_scores = np.array(candidate_scores)
-        best_idx = np.argmax(thresholded_scores)
-        if candidate_scores[best_idx] > biased_source_score:
-            best_candidate = candidates[best_idx]
-        else:
-            best_candidate = None
+        candidates = self.apply_edits(text, candidate_edits)
 
-        return best_candidate, candidates
+        best_candidate: Optional[str] = None
+        if candidates:
+            # Do Scoring in one shot to use batching internally.
+            source_score, *candidate_scores = self._scorer.score([text] + candidates)
+            if source_score is not None:
+                # Add the threshold to bias towards source sentence.
+                best_score = source_score + self._threshold
+                for candidate, candidate_score in zip(candidates, candidate_scores):
+                    if candidate_score is not None and candidate_score > best_score:
+                        best_candidate = candidate
+                        best_score = candidate_score
+        return best_candidate, set(candidates)
 
     def proofread(self, sentence: str) -> str:
         correction = sentence
         previous_candidates = set([sentence])
-        while True:
+        i = 0
+        while i < self._max_iterations:
             better_alternative, candidates = self._better_alternative(
                 correction, previous_candidates
             )
@@ -72,5 +95,6 @@ class Proofreader:
                 break
             else:
                 correction = better_alternative
-                previous_candidates.union(set(candidates))
+                previous_candidates.union(candidates)
+            i += 1
         return correction

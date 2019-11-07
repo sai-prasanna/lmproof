@@ -7,14 +7,15 @@ from spacy.lang.en import English
 from symspellpy.symspellpy import SymSpell, Verbosity
 
 from .substitutions import english
+from .edit import Edit, Span
 
 
-class CandidateGenerator:
-    def candidates(self, text: str) -> List[str]:
+class CandidateEditGenerator:
+    def candidate_edits(self, text: str) -> List[Edit]:
         raise NotImplementedError()
 
 
-class MatchedGenerator(CandidateGenerator):
+class MatchedGenerator(CandidateEditGenerator):
     def __init__(
         self, substitutions: List[Set[str]], spacy_model: spacy.language.Language
     ):
@@ -32,9 +33,9 @@ class MatchedGenerator(CandidateGenerator):
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
 
-    def candidates(self, text: str) -> List[str]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy.tokenizer(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             # Currently we enumerate tokens, if it matches anything word
             # that can be susbtituted, we generate full sentence with only
@@ -46,18 +47,18 @@ class MatchedGenerator(CandidateGenerator):
                 substitutes = self._word2substitutes[current_token_lower] - {
                     current_token_lower
                 }
-                sentences = _substituted_sentences(token.i, tokenized, substitutes)
-                candidates.extend(sentences)
-        return candidates
+                current_candidate_edits = _edits(token.i, tokenized, substitutes)
+                candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
 
 
-class EnglishInflectedGenerator(CandidateGenerator):
+class EnglishInflectedGenerator(CandidateEditGenerator):
     def __init__(self):
         self._spacy = English()
 
-    def candidates(self, text: str) -> List[str]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy.tokenizer(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             lemmas = {
                 lemma
@@ -71,12 +72,12 @@ class EnglishInflectedGenerator(CandidateGenerator):
                 for inflection in inflections
             }
             substitutes = inflections - {token.text}
-            sentences = _substituted_sentences(token.i, tokenized, substitutes)
-            candidates.extend(sentences)
-        return candidates
+            current_candidate_edits = _edits(token.i, tokenized, substitutes)
+            candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
 
 
-class SpellCorrectGenerator(CandidateGenerator):
+class SpellCorrectGenerator(CandidateEditGenerator):
     def __init__(self, sym_spell: SymSpell, spacy_model: spacy.language.Language):
         self._sym_spell = sym_spell
         self._spacy = spacy_model
@@ -95,14 +96,14 @@ class SpellCorrectGenerator(CandidateGenerator):
                 / "frequency_dictionary_en_82_765.txt"
             )
             sym_spell.create_dictionary(str(dict_path))
-            spacy_model = English()
+            spacy_model = spacy.load("en", disable=["parser", "ner"])
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
         return cls(sym_spell, spacy_model)
 
-    def candidates(self, text: str) -> List[str]:
+    def candidate_edits(self, text: str) -> List[Edit]:
         tokenized = self._spacy(text)
-        candidates = []
+        candidate_edits = []
         for token in tokenized:
             if token.is_alpha and token.pos_ != "PROPN":
                 suggestions = self._sym_spell.lookup(
@@ -110,27 +111,24 @@ class SpellCorrectGenerator(CandidateGenerator):
                 )
                 substitutes = {s.term for s in suggestions} - {token.text, token.lower_}
                 if substitutes:
-                    sentences = _substituted_sentences(token.i, tokenized, substitutes)
-                    candidates.extend(sentences)
-        return candidates
+                    current_candidate_edits = _edits(token.i, tokenized, substitutes)
+                    candidate_edits.extend(current_candidate_edits)
+        return candidate_edits
 
 
-def _substituted_sentences(
-    token_idx: int, tokenized_sentence: spacy.tokens.Doc, substitutes: List[str]
-) -> List[str]:
-    candidates = []
-    prefix = tokenized_sentence[:token_idx]
-    suffix = tokenized_sentence[token_idx + 1 :]
+def _edits(
+    token_idx: int, tokenized_sentence: spacy.tokens.Doc, substitutes: Set[str]
+) -> List[Edit]:
+    candidate_edits = []
     replaced_token = tokenized_sentence[token_idx]
-    # Loop through the input alternative candidates
     for substitute in substitutes:
-        candidate = prefix.text_with_ws
-        if substitute:  # Could be empty for deletions.
-            if replaced_token.is_title:
-                substitute = substitute.title()
-            elif replaced_token.is_upper:
-                substitute = substitute.upper()
-            candidate += substitute + replaced_token.whitespace_
-        candidate += suffix.text_with_ws
-        candidates.append(candidate)
-    return candidates
+        if replaced_token.is_title:
+            substitute = substitute.title()
+        elif replaced_token.is_upper:
+            substitute = substitute.upper()
+        candidate = Edit(
+            Span(replaced_token.idx, replaced_token.idx + len(replaced_token)),
+            substitute,
+        )
+        candidate_edits.append(candidate)
+    return candidate_edits
