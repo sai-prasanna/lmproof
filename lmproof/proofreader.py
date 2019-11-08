@@ -1,6 +1,6 @@
-from typing import List, Set, Optional, Tuple, Callable
+from typing import List, Set, Optional, Tuple, Callable, Dict
 
-from lmproof.edit import Edit
+from lmproof.edit import Edit, Span
 from lmproof.scorer import TransformerLMScorer, SentenceScorer
 from lmproof.candidate_generators import (
     MatchedGenerator,
@@ -10,15 +10,7 @@ from lmproof.candidate_generators import (
 )
 
 
-def apply_all_edits(text: str, edits: List[Edit]) -> List[str]:
-    candidates = []
-    for edit in edits:
-        candidate = text[: edit.span.start] + edit.text + text[edit.span.end :]
-        candidates.append(candidate)
-    return candidates
-
-
-ApplyEdits = Callable[[str, List[Edit]], List[str]]
+EditsReducer = Callable[[str, List[Edit]], List[Edit]]
 
 
 class Proofreader:
@@ -27,13 +19,15 @@ class Proofreader:
         candidate_generators: List[CandidateEditGenerator],
         scorer: SentenceScorer,
         threshold: float,
-        apply_edits: ApplyEdits = apply_all_edits,
+        linear_errors: bool = True,
+        edits_reducer: Optional[EditsReducer] = None,
         max_iterations: int = 4,
     ):
         self._candidate_generators = candidate_generators
         self._scorer = scorer
         self._threshold = threshold
-        self.apply_edits = apply_edits
+        self._linear_errors = linear_errors
+        self._edits_reducer = edits_reducer
         self._max_iterations = max_iterations
         # TODO: Weight language model score by the prior probability of the edit made.
         #  The prior probability of edit can be obtained by the
@@ -52,6 +46,60 @@ class Proofreader:
         else:
             raise RuntimeError("Currently unsupported language.")
 
+    def proofread(self, sentence: str) -> str:
+        correction = sentence
+        if self._linear_errors:
+            candidate_edits = [
+                candidate_edit
+                for g in self._candidate_generators
+                for candidate_edit in g.candidate_edits(sentence)
+            ]
+            if self._edits_reducer:
+                candidate_edits = self._edits_reducer(sentence, candidate_edits)
+
+            candidates = [
+                sentence[: edit.span.start] + edit.text + sentence[edit.span.end :]
+                for edit in candidate_edits
+            ]
+            source_score, *candidate_scores = self._scorer.score(
+                [sentence] + candidates
+            )
+            if source_score is not None:
+                best_edit_scores: Dict[Span, Tuple[Edit, float]] = {}
+                for edit, score in zip(candidate_edits, candidate_scores):
+                    if score is not None and score > (source_score + self._threshold):
+                        if (
+                            edit.span not in best_edit_scores
+                            or score > best_edit_scores[edit.span][1]
+                        ):
+                            best_edit_scores[edit.span] = (edit, score)
+                best_edits = sorted(
+                    [edit_score[0] for edit_score in best_edit_scores.values()],
+                    key=lambda edit: edit.span.start,
+                )
+                current_idx = 0
+                correction = ""
+                for edit in best_edits:
+                    if edit.span.start >= current_idx:
+                        correction += sentence[current_idx : edit.span.start]
+                        correction += edit.text
+                    current_idx = edit.span.end
+                correction += sentence[current_idx:]
+        else:
+            previous_candidates = set([sentence])
+            i = 0
+            while i < self._max_iterations:
+                better_alternative, new_candidates = self._better_alternative(
+                    correction, previous_candidates
+                )
+                if better_alternative is not None:
+                    correction = better_alternative
+                    previous_candidates.union(new_candidates)
+                else:
+                    break
+                i += 1
+        return correction
+
     def _better_alternative(
         self, text: str, previous_candidates: Set[str]
     ) -> Tuple[Optional[str], Set[str]]:
@@ -66,8 +114,12 @@ class Proofreader:
             not in previous_candidates
         ]
 
-        candidates = self.apply_edits(text, candidate_edits)
-
+        if self._edits_reducer:
+            candidate_edits = self._edits_reducer(text, candidate_edits)
+        candidates = [
+            text[: edit.span.start] + edit.text + text[edit.span.end :]
+            for edit in candidate_edits
+        ]
         best_candidate: Optional[str] = None
         if candidates:
             # Do Scoring in one shot to use batching internally.
@@ -80,19 +132,3 @@ class Proofreader:
                         best_candidate = candidate
                         best_score = candidate_score
         return best_candidate, set(candidates)
-
-    def proofread(self, sentence: str) -> str:
-        correction = sentence
-        previous_candidates = set([sentence])
-        i = 0
-        while i < self._max_iterations:
-            better_alternative, candidates = self._better_alternative(
-                correction, previous_candidates
-            )
-            if not better_alternative:
-                break
-            else:
-                correction = better_alternative
-                previous_candidates.union(candidates)
-            i += 1
-        return correction
