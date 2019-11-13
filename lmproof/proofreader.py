@@ -83,7 +83,7 @@ class Proofreader:
                     if edit.span.start >= current_idx:
                         correction += sentence[current_idx : edit.span.start]
                         correction += edit.text
-                    current_idx = edit.span.end
+                        current_idx = edit.span.end
                 correction += sentence[current_idx:]
         else:
             previous_candidates = set([sentence])

@@ -30,10 +30,9 @@ class TransformerLMScorer(SentenceScorer):
         # Load pre-trained model tokenizer (vocabulary)
         self.tokenizer = tokenizer
         self.device = torch.device(device)
-        self.model = model.to(self.device)
-        self.model.eval()
+        self.model = model.to(self.device).eval()
         self.batch_size = batch_size
-        self.normalize = False
+        self.normalize = normalize
         self._loss_fn = CrossEntropyLoss(ignore_index=-1)
 
     @classmethod
