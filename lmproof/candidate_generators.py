@@ -96,7 +96,7 @@ class SpellCorrectGenerator(CandidateEditGenerator):
                 / "frequency_dictionary_en_82_765.txt"
             )
             sym_spell.create_dictionary(str(dict_path))
-            spacy_model = spacy.load("en", disable=["parser", "ner"])
+            spacy_model = spacy.load("en_core_web_sm", disable=["parser", "ner"])
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
         return cls(sym_spell, spacy_model)

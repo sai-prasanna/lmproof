@@ -1,7 +1,7 @@
 from typing import List, Optional
+import logging
 
 import torch
-import logging
 from torch.nn import CrossEntropyLoss
 from transformers import (
     AutoTokenizer,
@@ -25,6 +25,7 @@ class TransformerLMScorer(SentenceScorer):
         model: PreTrainedModel,
         device: str = "cpu",
         batch_size: int = 1,
+        add_special_tokens: bool = False,
         normalize: bool = False,
     ):
         # Load pre-trained model tokenizer (vocabulary)
@@ -33,6 +34,7 @@ class TransformerLMScorer(SentenceScorer):
         self.model = model.to(self.device).eval()
         self.batch_size = batch_size
         self.normalize = normalize
+        self._add_special_tokens = add_special_tokens
         self._loss_fn = CrossEntropyLoss(ignore_index=-1)
 
     @classmethod
@@ -58,7 +60,9 @@ class TransformerLMScorer(SentenceScorer):
 
             tokenized_batch = []
             for i, sentence in enumerate(batched_sentences):
-                tokens = self.tokenizer.encode(sentence)
+                tokens = self.tokenizer.encode(
+                    sentence, add_special_tokens=self._add_special_tokens
+                )
                 if len(tokens) <= self.tokenizer.max_len:
                     tokenized_batch.append(torch.LongTensor(tokens))  # type: ignore
                     batch_scored_idx.append(i)

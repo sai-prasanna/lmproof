@@ -26,8 +26,6 @@ Unlike many approaches to GEC, this approach does NOT require annotated training
 
 This work builds upon https://github.com/chrisjbryant/lmgec-lite/
 
-
-
 ## Components
 
 ### Language Models
@@ -42,8 +40,8 @@ Pre-trained language models for other languages, inflectors, common error patter
 
 ## TODOs
 
-* Research on distilling gpt-2 to a smaller model (LSTM?) to reduce the horrendous latency.
-* Experiment on GEC dev sets to obtain optimal thresholds.
-* Anyway to handle insertions.
+* Use edits in existing GEC corpus to generate candidates.
+* Tests
+* Publish benchmarks of the model.
+* Think of simple ways to generate insertion candidates.
 * Add more languages.
-* Check whether LemmInflect proposals are actually better than just using [AGID](https://github.com/sai-prasanna/lmgec-lite/tree/master/resources/agid-2016.01.19).
