@@ -95,7 +95,7 @@ class SpellCorrectGenerator(CandidateEditGenerator):
                 / "resources"
                 / "frequency_dictionary_en_82_765.txt"
             )
-            symspell.load_dictionary(str(dict_path), term_index=0, count_index=1)
+            sym_spell.load_dictionary(str(dict_path), term_index=0, count_index=1)
             spacy_model = spacy.load("en_core_web_sm", disable=["parser", "ner"])
         else:
             raise RuntimeError(f"The language {language} is currently not language.")
@@ -127,7 +127,7 @@ def _edits(
         elif replaced_token.is_upper:
             substitute = substitute.upper()
 
-        if token_idx == 0 and substitute == "" and len(tokenized_sentence) >= 1:
+        if token_idx == 0 and substitute == "" and len(tokenized_sentence) > 1:
             candidate = Edit(
                 Span(replaced_token.idx, tokenized_sentence[1].idx + 1),
                 tokenized_sentence[1].text[0].upper(),
