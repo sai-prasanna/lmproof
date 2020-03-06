@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lmproof"
-version = "0.2.0"
+version = "0.2.1"
 description = "Language model powered proof reader for correcting contextual errors in natural language."
 authors = ["sai-prasanna <sai.r.prasanna@gmail.com>"]
 readme = "README.md"
@@ -19,12 +19,13 @@ classifiers = [
 include = ["resources/*.txt"]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.6"
 spacy = ">=2.0"
 torch = ">=1.2.0"
 lemminflect = ">=0.2.0"
 transformers = ">=2.0"
 symspellpy = ">=6.0"
+dataclasses = { version = ">=0.7", python = "~3.6" }
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
