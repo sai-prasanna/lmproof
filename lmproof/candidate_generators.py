@@ -1,5 +1,5 @@
 import pathlib
-from typing import List, Set
+from typing import List, Set, Dict
 
 import lemminflect
 import spacy
@@ -17,13 +17,10 @@ class CandidateEditGenerator:
 
 class MatchedGenerator(CandidateEditGenerator):
     def __init__(
-        self, substitutions: List[Set[str]], spacy_model: spacy.language.Language
+        self, substitutions: Dict[str, Set[str]], spacy_model: spacy.language.Language,
     ):
         self._spacy = spacy_model
-        self._substitutions = substitutions
-        self._word2substitutes = {
-            word: substs for substs in substitutions for word in substs if word
-        }
+        self._word2substitutes = substitutions
 
     @classmethod
     def load(cls, language: str) -> "MatchedGenerator":
