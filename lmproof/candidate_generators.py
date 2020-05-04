@@ -1,5 +1,5 @@
 import pathlib
-from typing import List, Set
+from typing import List, Set, Tuple, Union
 
 import lemminflect
 import spacy
@@ -17,13 +17,25 @@ class CandidateEditGenerator:
 
 class MatchedGenerator(CandidateEditGenerator):
     def __init__(
-        self, substitutions: List[Set[str]], spacy_model: spacy.language.Language
+        self,
+        substitutions: List[Union[Set[str], Tuple[str]]],
+        spacy_model: spacy.language.Language,
+        generate_combinations: bool = True,
     ):
         self._spacy = spacy_model
-        self._substitutions = substitutions
-        self._word2substitutes = {
-            word: substs for substs in substitutions for word in substs if word
-        }
+        if generate_combinations:
+            self._word2substitutes = {
+                word: substs for substs in substitutions for word in substs if word
+            }
+        else:
+            self._word2substitutes = {
+                substitution[0]: substitution[1] for substitution in substitutions
+            }
+        print("-"*50)
+        print(f"subsitutions:{substitutions}")
+        print("-"*50)
+        print(f"wrd2subs:{self._word2substitutes}")
+        print("\n\n")
 
     @classmethod
     def load(cls, language: str) -> "MatchedGenerator":
