@@ -1,5 +1,5 @@
 import pathlib
-from typing import List, Set, Tuple, Union
+from typing import List, Set, Tuple, Union, Dict
 
 import lemminflect
 import spacy
@@ -18,18 +18,19 @@ class CandidateEditGenerator:
 class MatchedGenerator(CandidateEditGenerator):
     def __init__(
         self,
-        substitutions: List[Union[Set[str], Tuple[str]]],
+        substitutions: List[Tuple[str,...]],
         spacy_model: spacy.language.Language,
         generate_combinations: bool = True,
     ):
         self._spacy = spacy_model
         if generate_combinations:
             self._word2substitutes = {
-                word: substs for substs in substitutions for word in substs if word
+                word: set(substs) for substs in substitutions for word in substs if word
             }
-        else:
+            print(f"w2s type: {type(self._word2substitutes)}")
+        else: # Create one-to-one substitute mapping unidirectionally
             self._word2substitutes = {
-                substitution[0]: substitution[1] for substitution in substitutions
+                substitution[0]: {substitution[1]} for substitution in substitutions
             }
 
     @classmethod

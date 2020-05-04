@@ -1,14 +1,14 @@
 # pylint:disable=bad-continuation
-from typing import List, Set
+from typing import List, Tuple
 
 
-def english() -> List[Set[str]]:
+def english() -> List[Tuple[str, ...]]:
     return [
         # Article/Determiner
-        {"a", "an", "the", ""},
+        ("a", "an", "the", ""),
         # Prepositions
-        {"about", "at", "by", "for", "from", "in", "of", "on", "to", "with", ""},
+        ("about", "at", "by", "for", "from", "in", "of", "on", "to", "with", ""),
         # Commonly confused words
-        {"bear", "bare"},
-        {"lose", "loose"},
+        ("bear", "bare"),
+        ("lose", "loose"),
     ]
