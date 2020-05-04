@@ -31,11 +31,6 @@ class MatchedGenerator(CandidateEditGenerator):
             self._word2substitutes = {
                 substitution[0]: substitution[1] for substitution in substitutions
             }
-        print("-"*50)
-        print(f"subsitutions:{substitutions}")
-        print("-"*50)
-        print(f"wrd2subs:{self._word2substitutes}")
-        print("\n\n")
 
     @classmethod
     def load(cls, language: str) -> "MatchedGenerator":
