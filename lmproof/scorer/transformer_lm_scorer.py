@@ -1,21 +1,18 @@
-from typing import List, Optional
+from typing import List, Optional, Protocol
 import logging
 
 import torch
-from torch.nn import CrossEntropyLoss
+import torch.nn.functional as F
 from transformers import (
     AutoTokenizer,
-    AutoModelWithLMHead,
+    AutoModelForCausalLM,
     PreTrainedTokenizer,
     PreTrainedModel,
 )
 
+from lmproof.scorer.scorer import SentenceScorer
+
 logger = logging.getLogger(__name__)
-
-
-class SentenceScorer:
-    def score(self, sentences: List[str]) -> List[Optional[float]]:
-        raise NotImplementedError()
 
 
 class TransformerLMScorer(SentenceScorer):
@@ -36,15 +33,13 @@ class TransformerLMScorer(SentenceScorer):
         self.batch_size = batch_size
         self.normalize = normalize
         self._add_special_tokens = add_special_tokens
-        self._loss_ignore_idx = -100
-        self._loss_fn = CrossEntropyLoss(ignore_index=self._loss_ignore_idx)
         self.max_token_limit = max_token_limit
 
     @classmethod
     def load(cls, language: str, device: str = "cpu") -> "TransformerLMScorer":
         if language == "en":
             tokenizer = AutoTokenizer.from_pretrained("gpt2")
-            model = AutoModelWithLMHead.from_pretrained("distilgpt2")
+            model = AutoModelForCausalLM.from_pretrained("distilgpt2")
             return cls(tokenizer, model, device)
         else:
             raise RuntimeError(f"Language {language} is not supported.")
@@ -59,7 +54,7 @@ class TransformerLMScorer(SentenceScorer):
             attention_mask, batch_first=True, padding_value=0
         ).to(self.device)
         labels_batch = torch.nn.utils.rnn.pad_sequence(
-            input_ids, batch_first=True, padding_value=self._loss_ignore_idx
+            input_ids, batch_first=True, padding_value=self.tokenizer.eos_token_id
         ).to(self.device)
         with torch.no_grad():
             lm_logits = self.model(input_ids=padded_batch, attention_mask=padded_mask)[
@@ -67,16 +62,20 @@ class TransformerLMScorer(SentenceScorer):
             ]
             shift_logits_batch = lm_logits[..., :-1, :].contiguous()
             shift_labels_batch = labels_batch[..., 1:].contiguous()
-            scores = []
-            for shift_logits, shift_labels in zip(
-                shift_logits_batch, shift_labels_batch
-            ):
-                loss = self._loss_fn(shift_logits, shift_labels)
-                score = -loss
-                if self.normalize:
-                    score = score / (padded_mask.sum() - 1)
-                scores.append(score.cpu().item())
-        return scores
+            shift_label_mask = padded_mask[..., 1:].contiguous()
+            # Log softmax and select the log probabilities which correspond to next token label
+            log_prob = torch.gather(
+                F.log_softmax(shift_logits_batch, dim=-1),
+                -1,
+                shift_labels_batch.unsqueeze(-1),
+            )
+            # Remove the log prob corresponding to padded tokens and Normalize by length
+            normalized_log_prob = (
+                torch.sum(log_prob.squeeze(-1) * shift_label_mask, -1)
+                * 1
+                / shift_label_mask.sum(-1)
+            )
+        return [o.item() for o in normalized_log_prob.cpu()]
 
     def score(self, sentences: List[str]) -> List[Optional[float]]:
         encoded = self.tokenizer.batch_encode_plus(sentences)
@@ -84,7 +83,6 @@ class TransformerLMScorer(SentenceScorer):
         batch_input_ids = []
         batch_attention_mask = []
         batch_idx = []
-        batch_size = 2
         for i in range(len(sentences)):
             if len(encoded["input_ids"][i]) < self.max_token_limit:
                 batch_idx.append(i)

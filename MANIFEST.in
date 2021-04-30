@@ -1,1 +1,1 @@
-include resources/frequency_dictionary_en_82_765.txt
+include candidate_generator/resources/frequency_dictionary_en_82_765.txt

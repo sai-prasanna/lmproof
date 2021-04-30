@@ -3,7 +3,8 @@
 Library to do proof-reading corrections for Grammatical Errors, spelling errors, confused word errors and other errors using pre-trained Language Models.
 
 ## Usage
-Install spacy model by `python -m spacy download en`.
+Install the library with `pip install lmproof[all]` to obtain all the dependencies needed for default implementation.
+Download the spacy model by `python -m spacy download en_core_web_sm`.
 Then try out this snippet.
 
 ``` python

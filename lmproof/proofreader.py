@@ -1,13 +1,9 @@
 from typing import List, Set, Optional, Tuple, Callable, Dict
+import sys
 
 from lmproof.edit import Edit, Span
-from lmproof.scorer import TransformerLMScorer, SentenceScorer
-from lmproof.candidate_generators import (
-    MatchedGenerator,
-    CandidateEditGenerator,
-    EnglishInflectedGenerator,
-    SpellCorrectGenerator,
-)
+from lmproof.scorer.scorer import SentenceScorer
+from lmproof.candidate_generator.candidate_generator import CandidateEditGenerator
 
 
 EditsReducer = Callable[[str, List[Edit]], List[Edit]]
@@ -36,6 +32,21 @@ class Proofreader:
 
     @classmethod
     def load(cls, language: str, device: str = "cpu") -> "Proofreader":
+        try:
+            # Dynamic import to support use of library with custom implementations without
+            # having to install all the dependencies used for defaults.
+            from lmproof.candidate_generator.matched_generator import MatchedGenerator
+            from lmproof.candidate_generator.en_inflection_generator import (
+                EnglishInflectedGenerator,
+            )
+            from lmproof.candidate_generator.spell_correct_generator import (
+                SpellCorrectGenerator,
+            )
+            from lmproof.scorer.transformer_lm_scorer import TransformerLMScorer
+        except ImportError as excp:
+            print(f"Install the library with `pip install lmproof[all]`")
+            raise excp
+
         if language == "en":
             scorer = TransformerLMScorer.load(language, device=device)
             match_gen = MatchedGenerator.load(language)
